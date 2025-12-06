@@ -3,10 +3,16 @@
 #include <tlhelp32.h>
 #include <chrono>
 #include <iostream>
-#include <iomanip>
 #include <vector>
 
 #pragma comment(lib, "dbghelp.lib")
+
+#define TEST_IMPHASH
+
+#if defined TEST_IMPHASH
+#include <cmath>
+double x = std::pow(3.0, 4.0);
+#endif
 
 typedef BOOL(WINAPI* MyDumpPtr)(
     HANDLE        hProcess,

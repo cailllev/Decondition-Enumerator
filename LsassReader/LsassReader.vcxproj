@@ -22,7 +22,7 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{98338446-8f5a-46e6-9db4-c9a2cb6d4ca7}</ProjectGuid>
-    <RootNamespace>Deconditioner</RootNamespace>
+    <RootNamespace>Decondition-Enumerator</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
