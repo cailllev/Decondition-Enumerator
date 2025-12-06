@@ -7,11 +7,13 @@
 
 #pragma comment(lib, "dbghelp.lib")
 
-#define TEST_IMPHASH
-
-#if defined TEST_IMPHASH
-#include <cmath>
-double x = std::pow(3.0, 4.0);
+#if TRUE // toggle this to change IMPHASH
+#include <fstream>
+void test() {
+    std::ofstream out("test.txt");
+    out << "Test";
+    out.close();
+}
 #endif
 
 typedef BOOL(WINAPI* MyDumpPtr)(
