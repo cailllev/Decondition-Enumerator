@@ -7,7 +7,7 @@
 
 #pragma comment(lib, "dbghelp.lib")
 
-#if TRUE // toggle this to change IMPHASH
+#if FALSE // toggle this to change IMPHASH
 #include <fstream>
 void test() {
     std::ofstream out("test.txt");
