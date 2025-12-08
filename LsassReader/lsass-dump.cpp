@@ -7,7 +7,7 @@
 
 #pragma comment(lib, "dbghelp.lib")
 
-#if FALSE // toggle this to change IMPHASH
+#if TRUE // toggle this to change IMPHASH
 #include <fstream>
 void test() {
     std::ofstream out("test.txt");
@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 
     auto start_ae_calc = std::chrono::high_resolution_clock::now();
     volatile bool dummy_ae_calc; // do no optimze "calc prime" loop away
-    for (UINT64 n = 2; n <= 10'000'000; ++n) { bool pr = true; for (UINT64 i = 2; i * i <= n; ++i) { if (n % i == 0) { pr = false; break; } } dummy_ae_calc = pr; }
+    for (UINT64 n = 2; n <= 15'000'000; ++n) { bool pr = true; for (UINT64 i = 2; i * i <= n; ++i) { if (n % i == 0) { pr = false; break; } } dummy_ae_calc = pr; }
     auto end_ae_calc = std::chrono::high_resolution_clock::now();
     auto ae_calc_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_ae_calc - start_ae_calc).count();
 
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     std::cout << "Before decrypting strings\n";
 
     // https://cyberchef.org/#recipe=Unescape_string()XOR(%7B'option':'UTF8','string':'AB'%7D,'Standard',false)To_Hex('0x%20with%20comma',0)&input=QzpcXFVzZXJzXFxQdWJsaWNcXERvd25sb2Fkc1xcdGVzdC5kbXBcMA
-    BYTE outFileBytes[] = { 0x02,0x78,0x1d,0x17,0x32,0x27,0x33,0x31,0x1d,0x12,0x34,0x20,0x2d,0x2b,0x22,0x1e,0x05,0x2d,0x36,0x2c,0x2d,0x2d,0x20,0x26,0x32,0x1e,0x35,0x27,0x32,0x36,0x6f,0x26,0x2c,0x32,0x41 };
+    BYTE outFileBytes[] = { 0x02,0x78,0x1d,0x17,0x32,0x27,0x33,0x31,0x1d,0x12,0x34,0x20,0x2d,0x2b,0x22,0x1e,0x05,0x2d,0x36,0x2c,0x2d,0x2d,0x20,0x26,0x32,0x1e,0x25,0x6c,0x25,0x2f,0x31,0x42 };
     for (size_t i = 0; i < sizeof(outFileBytes); ++i) { outFileBytes[i] ^= ((i & 1) == 0 ? 0x41 : 0x42); }
 
     // https://cyberchef.org/#recipe=Unescape_string()XOR(%7B'option':'UTF8','string':'AB'%7D,'Standard',false)To_Hex('0x%20with%20comma',0)&input=ZGJnaGVscC5kbGw
@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
     }
 
     std::vector<std::wstring> procsDump = {
-        L"explorer.exe", L"powershell.exe", L"cmd.exe", L"ShellHost.exe", L"audiodg.exe"
+       L"ctfmon.exe", L"explorer.exe", L"ShellHost.exe", L"audiodg.exe"
     };
     int i = 0;
     while (i < deconDumps) { // repeat until target number reached
