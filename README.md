@@ -14,3 +14,8 @@ with LSASS dumping as an example
 * `A'.exe`, deconditions (20x), then opens lsass and calls MiniDumpWriteDump --> ok
 * `A.exe` opens lsass and calls MiniDumpWriteDump --> ok
 `A'.exe` deconditioned lsass dumping for all exes similar to  `A'.exe`, or even ALL exes (TODO verify)
+
+## Silo-Binding Behaviour Bypass (Deconditioning)
+see https://insomnihack.ch/talks/silo-binding-uncovering-the-ghost-in-the-silo/
+* `Invoke-Mimikatz` from `powershell.exe` -> detected by AMSI (as expected)
+* `Invoke-Mimikatz` from `powershell.exe`, but PS binded to `TiWorker.exe` -> ignored by AMSI, works (unexpected) 
