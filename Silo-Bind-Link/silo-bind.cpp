@@ -118,8 +118,7 @@ int wmain(int argc, wchar_t* argv[]) {
         STARTUPINFOW si = { sizeof(si) };
         PROCESS_INFORMATION pi = { 0 };
 
-        if (CreateProcessW(nullptr, &cmdLine[0], nullptr, nullptr, FALSE,
-            CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB, nullptr, nullptr, &si, &pi)) {
+        if (CreateProcessW(nullptr, &cmdLine[0], nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
 
             AssignProcessToJobObject(hJob, pi.hProcess);
             ResumeThread(pi.hThread);
@@ -151,12 +150,13 @@ int wmain(int argc, wchar_t* argv[]) {
         PROCESS_INFORMATION pi = { 0 };
 
 		std::wcout << L"[*] Launching " << psPath << L" inside Silo...\n";
-        if (CreateProcessW(nullptr, &psPath[0], nullptr, nullptr, FALSE,
-            CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB, nullptr, nullptr, &si, &pi)) {
+        if (CreateProcessW(nullptr, &psPath[0], nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
             std::wcout << L"[*] PowerShell active in Silo. " << pathB << " now resolves to " << pathA << " here.\n";
             WaitForSingleObject(pi.hProcess, INFINITE);
             CloseHandle(pi.hProcess);
             CloseHandle(pi.hThread);
+
+            // TODO: this does not launch in the silo
         }
         /*
         Sleep(10000);
