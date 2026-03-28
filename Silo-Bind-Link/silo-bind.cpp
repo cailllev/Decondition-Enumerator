@@ -73,8 +73,8 @@ int wmain(int argc, wchar_t* argv[]) {
     if (!isWorker && argc < 4) {
         std::wstring exePath = argv[0];
         std::wcout << L"Usage: " << exePath << " <path_a> <path_b> <silo_name>\n";
-        std::wcout << L"Example: " << exePath << " C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\PowerShell.exe C:\\Windows\\System32\\calc.exe PsCalc\n";
-		std::wcout << L"Hint: Use Bind-Link-PS.exe unbind C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\PowerShell.exe to unbind if needed.\n";
+        std::wcout << L"Example: " << exePath << " C:\\Windows\\SysWOW\\WindowsPowerShell\\v1.0\\PowerShell.exe C:\\Windows\\System32\\calc.exe PsCalc\n";
+		std::wcout << L"Hint: Use Bind-Link-PS.exe unbind C:\\Windows\\SysWOW\\WindowsPowerShell\\v1.0\\PowerShell.exe to unbind if needed.\n";
         return 1;
     }
 
@@ -93,7 +93,8 @@ int wmain(int argc, wchar_t* argv[]) {
     }
 
     if (!isWorker) {
-        if (IsParentPowerShell()) {
+        // check if powershell is bound and parent is powershell
+		if (IsParentPowerShell()) {
             std::wcerr << L"[-] This tool should be run from a cmd.exe prompt to not interfere with PowerShell.exe on disk, it cannot be run from a PowerShell terminal." << std::endl;
             return 1;
 		}
@@ -145,19 +146,27 @@ int wmain(int argc, wchar_t* argv[]) {
             L"Silo-Local Bind Link (B -> A)");
 
         // 2. Launch PowerShell
-        //std::wstring psPath = L"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
-        std::wstring psPath = pathB;
+        std::wstring psPath = L"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe";
         STARTUPINFOW si = { sizeof(si) };
         PROCESS_INFORMATION pi = { 0 };
 
 		std::wcout << L"[*] Launching " << psPath << L" inside Silo...\n";
-        if (CreateProcessW(nullptr, &psPath[0], nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi)) {
+        if (CreateProcessW(nullptr, &psPath[0], nullptr, nullptr, FALSE,
+            CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB, nullptr, nullptr, &si, &pi)) {
             std::wcout << L"[*] PowerShell active in Silo. " << pathB << " now resolves to " << pathA << " here.\n";
-            Sleep(60000);
-            //WaitForSingleObject(pi.hProcess, INFINITE);
-            //CloseHandle(pi.hProcess);
-            //CloseHandle(pi.hThread); 
+            WaitForSingleObject(pi.hProcess, INFINITE);
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
         }
+        /*
+        Sleep(10000);
+        std::wcout << L"[*] PowerShell exited. Cleaning up bind links...\n";
+
+        std::wstring unbindA = L"\"C:\\Users\\hacker\\source\\repos\\Decondition-Enumerator\\x64\\Release\\Bind-Link-PS.exe unbind" + pathA;
+        CreateProcessW(nullptr, &unbindA[0], nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+        std::wstring unbindB = L"\"C:\\Users\\hacker\\source\\repos\\Decondition-Enumerator\\x64\\Release\\Bind-Link-PS.exe unbind" + pathB;
+        CreateProcessW(nullptr, &unbindB[0], nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+        */
     }
 
     return 0;
