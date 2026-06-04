@@ -13,7 +13,7 @@ with LSASS dumping as an example
 * `A.exe`.exe opens lsass and calls MiniDumpWriteDump --> block
 * `A'.exe`, deconditions (20x), then opens lsass and calls MiniDumpWriteDump --> ok
 * `A.exe` opens lsass and calls MiniDumpWriteDump --> ok
-`A'.exe` deconditioned lsass dumping for all exes similar to  `A'.exe`, or even ALL exes (TODO verify)
+* `A'.exe` deconditioned lsass dumping for all exes similar to  `A'.exe`, TODO: or even ALL exes?
 
 ## Mem Alloc and RemoteThread Execute
 with SirAllocALot, see https://github.com/dobin/SuperMega
